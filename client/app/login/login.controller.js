@@ -2,7 +2,7 @@
   'use strict';
 
   angular.module('myChildApp')
-    .controller('LoginCtrl', function ($scope, $http) {
+    .controller('LoginCtrl', function () {
 
     });
 })();

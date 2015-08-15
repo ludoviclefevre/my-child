@@ -2,7 +2,7 @@
   'use strict';
 
   angular.module('myChildApp')
-    .controller('GalleriesCtrl', function ($scope, $http) {
+    .controller('GalleriesCtrl', function () {
 
     });
 })();
