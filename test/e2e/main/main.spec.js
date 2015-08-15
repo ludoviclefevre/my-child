@@ -5,7 +5,7 @@ describe('Main View', function() {
 
   beforeEach(function() {
     browser.get('/');
-    page = require('./main.po');
+    page = require('./main.po.js');
   });
 
   it('should include jumbotron with correct data', function() {
