@@ -9,6 +9,14 @@ module.exports = {
   DOMAIN:           'http://localhost:9000',
   SESSION_SECRET:   'mychild-secret',
 
+  authentication: {
+    google: {
+      type: 'oauth',
+      clientId: 'xxxx',
+      clientSecret: 'yyyyyy'
+    }
+  },
+
   // Control debug level for modules using visionmedia/debug
   DEBUG: ''
 };
