@@ -11,7 +11,7 @@ var path = require('path');
 module.exports = function (app) {
 
   // Insert routes below
-  app.use('/api/things', require('./api/thing'));
+  app.use('/api/things', ensureAuthenticated, require('./api/thing'));
 
   // GET /auth/google
 //   Use passport.authenticate() as route middleware to authenticate the
@@ -19,7 +19,7 @@ module.exports = function (app) {
 //   redirecting the user to google.com.  After authorization, Google
 //   will redirect the user back to this application at /auth/google/callback
   app.get('/auth/google',
-    passport.authenticate('google',  {scope: ['profile', 'email']}),
+    passport.authenticate('google', {scope: ['profile', 'email']}),
     function (req, res) {
       // The request will be redirected to Google for authentication, so this
       // function will not be called.
@@ -33,6 +33,7 @@ module.exports = function (app) {
   app.get('/auth/google/callback',
     passport.authenticate('google', {failureRedirect: '/login'}),
     function (req, res) {
+      req.session.user = {};
       res.redirect('/');
     });
 
@@ -45,4 +46,16 @@ module.exports = function (app) {
     .get(function (req, res) {
       res.sendFile(path.resolve(app.get('appPath') + '/index.html'));
     });
+
+  // Simple route middleware to ensure user is authenticated.
+  // Use this route middleware on any resource that needs to be protected.  If
+  // the request is authenticated (typically via a persistent login session),
+  // the request will proceed.  Otherwise, the user will be redirected to the
+  // login page.
+  function ensureAuthenticated(req, res, next) {
+    if (req.isAuthenticated()) {
+      return next();
+    }
+    res.redirect('/login');
+  }
 };
