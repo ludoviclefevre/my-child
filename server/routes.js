@@ -7,11 +7,118 @@
 var passport = require('passport')
 var errors = require('./components/errors');
 var path = require('path');
+var localEnv = require('./config/local.env.js');
+
+var ObjectId = require('mongodb').ObjectID;
+
 
 module.exports = function (app) {
 
   // Insert routes below
   app.use('/api/things', ensureAuthenticated, require('./api/thing'));
+
+//----------------------------------------------------------------------
+app.delete('/api/posts/:id',function(req,res){
+      var MongoClient = require('mongodb').MongoClient;
+
+      MongoClient.connect(localEnv.mongoConnString, function(err, db) {
+      if(err){
+        console.log('mongo conn err');
+        return;
+      }
+      console.log("Connected correctly to server");
+     
+      var collection = db.collection('mychild');
+      var id = req.params.id
+
+      console.log('id:',id)
+      
+      collection.remove({_id:new ObjectId(id)}, function(err, result) {
+        if(err){
+          console.log('error delete:',err)
+        }
+        db.close();
+        res.send('ok');
+      }); 
+    })
+  })
+
+//----------------------------------------------------------------------
+  app.put('/api/posts',function(req,res){// TODO : ajouter ensureAuthenticated
+      console.log('new post:',req.body.title);
+    
+    var MongoClient = require('mongodb').MongoClient;
+
+    MongoClient.connect(localEnv.mongoConnString, function(err, db) {
+      if(err){
+        console.log('mongo conn err');
+        return;
+      }
+      console.log("Connected correctly to server");
+     
+      var collection = db.collection('mychild');
+      console.log('id:',req.body._id)
+      var id = req.body._id
+      
+      delete req.body._id;
+      collection.update({_id:new ObjectId(id)},req.body, function(err, result) {
+        if(err){
+          console.log('error update:',err)
+        }
+        console.log(req.body)
+        db.close();
+        res.send('ok');
+      }); 
+
+      
+    });
+
+  });
+
+//----------------------------------------------------------------------
+  app.get('/api/posts',function(req,res){// TODO : ajouter ensureAuthenticated
+    var MongoClient = require('mongodb').MongoClient;
+
+    MongoClient.connect(localEnv.mongoConnString, function(err, db) {
+      if(err){
+        console.log('mongo conn err');
+        return;
+      }
+      var collection = db.collection('mychild');
+      collection.find({}).toArray(function(err, docs) {
+        db.close();
+        res.send(docs);
+      });
+    });
+  });
+//----------------------------------------------------------------------
+  app.post('/api/posts',function(req,res){ // TODO : ajouter ensureAuthenticated
+    console.log('new post:',req.body.title);
+    
+    var MongoClient = require('mongodb').MongoClient;
+
+    MongoClient.connect(localEnv.mongoConnString, function(err, db) {
+      if(err){
+        console.log('mongo conn err');
+        return;
+      }
+      console.log("Connected correctly to server");
+     
+      var collection = db.collection('mychild');
+
+      // Insert some documents 
+      collection.insert([
+        req.body
+      ], function(err, result) {
+        db.close();
+        res.send('ok');
+      });
+
+      
+    });
+
+    
+  });
 
   // GET /auth/google
 //   Use passport.authenticate() as route middleware to authenticate the
@@ -33,8 +140,9 @@ module.exports = function (app) {
   app.get('/auth/google/callback',
     passport.authenticate('google', {failureRedirect: '/login'}),
     function (req, res) {
+      console.log("logged");
       req.session.user = {};
-      res.redirect('/');
+      res.redirect('/#posts');
     });
 
   // All undefined asset or api routes should return a 404
@@ -56,6 +164,6 @@ module.exports = function (app) {
     if (req.isAuthenticated()) {
       return next();
     }
-    res.redirect('/login');
+    res.redirect('/#main');
   }
 };

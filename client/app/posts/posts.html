@@ -1,0 +1,15 @@
+<div align="center">
+	<h1>posts</h1>
+</div>
+<br/>
+
+<div ng-repeat="p in posts" style="padding:5px;margin:5px;border:1px solid black;float:left;cursor:pointer" ng-click="goToPost(this.p)">
+	{{p.title}}
+</div>
+<br/><br/>
+<div style="clear:both"</div>
+
+<hr/>
+<span>Ajouter un post:</span><br/>
+Titre:<input type="text" ng-model="newPost.title"/><br/>
+<button ng-click="addPost()">Ajouter</button>
