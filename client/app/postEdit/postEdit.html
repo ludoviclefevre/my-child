@@ -5,6 +5,25 @@ Description:<br/>
 <textarea ng-model="post.description"></textarea>
 <br/><br/>
 Photos:
+<br/>
+
+    Drop File:
+    <div ngf-drop ngf-select ng-model="files" class="drop-box" 
+        ngf-drag-over-class="dragover" ngf-multiple="true" ngf-allow-dir="true"
+        accept="image/*,application/pdf">Drop or click to upload images/videos</div>
+    <div ngf-no-file-drop>File Drag/Drop is not supported for this browser</div>
+    Files:
+    <ul>
+        <li ng-repeat="f in files" style="font:smaller">{{f.name}}</li>
+    </ul>
+    Upload Log:
+    <pre>{{log}}</pre>
+</div>
+</div>
+<br/><br/>
+<div ng-repeat="s3m in s3Medias">
+    <img src="{{s3m}}"/>   
+</div>
 <br/><br/>
 <button ng-click="save()">Save</button>
 

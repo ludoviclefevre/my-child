@@ -1,4 +1,4 @@
-(function () {
+(function() {
   'use strict';
 
   angular.module('myChildApp', [
@@ -6,9 +6,10 @@
     'ngResource',
     'ngSanitize',
     'ngRoute',
-    'ui.bootstrap'
+    'ui.bootstrap',
+    'ngFileUpload'
   ])
-    .config(function ($routeProvider, $locationProvider) {
+    .config(function($routeProvider, $locationProvider) {
       $routeProvider
         .otherwise({
           redirectTo: '/'
@@ -17,4 +18,3 @@
       $locationProvider.html5Mode(true);
     });
 })();
-
