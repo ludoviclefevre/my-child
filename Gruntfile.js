@@ -496,16 +496,16 @@ module.exports = function (grunt) {
             '<%= yeoman.client %>/{app,components}/**/*.css'
           ]
         }
-      },
-
-      jscs: {
-        src: [
-          '<%= jshint.all %>',
-          '<%= jshint.test.src %>',
-          '<%= jshint.server.src %>',
-          '<%= jshint.serverTest.src %>'
-        ]
       }
+    },
+
+    jscs: {
+      src: [
+        '<%= jshint.all %>',
+        '<%= jshint.test.src %>',
+        '<%= jshint.server.src %>',
+        '<%= jshint.serverTest.src %>'
+      ]
     }
   });
 
