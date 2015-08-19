@@ -1,10 +1,21 @@
+<div class="pull-right">
+<button ng-click="editPost()"  style="margin:10px" type="button" class="btn  btn-info" data-toggle="modal" style="position">
+<span class="glyphicon glyphicon-pencil"></span>
+	</button>
+</div>
+
+<div class="pull-left">
+<button ng-click="goToList()"  style="margin:10px" type="button" class="btn " data-toggle="modal" style="position">
+<span class="glyphicon glyphicon-th-list"></span>
+	</button>
+</div>
+
 <div align="center">
 	<h1>{{post.title}}</h1><br/><br/><br/>
 	{{post.description}}
 
 </div>
 
-<button ng-click="editPost()">edit post</button>
 
 <br/></br/>
 <a href="/#posts">Posts list</a>

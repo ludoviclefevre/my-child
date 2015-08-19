@@ -1,3 +1,9 @@
+<div class="pull-right">
+<button onclick="document.getElementById('inputNewPost').focus();" style="margin:10px" type="button" class="btn btn-info " data-toggle="modal" data-target="#modalNewPost" style="position">
+<span class="glyphicon glyphicon-plus"></span>
+	</button>
+</div>
+
 <div align="center">
 	<h1>posts</h1>
 </div>
@@ -10,6 +16,27 @@
 <div style="clear:both"</div>
 
 <hr/>
-<span>Ajouter un post:</span><br/>
-Titre:<input type="text" ng-model="newPost.title"/><br/>
-<button ng-click="addPost()">Ajouter</button>
+
+
+<!-- Modal -->
+<div id="modalNewPost" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Nouveau Post</h4>
+      </div>
+      <div class="modal-body">
+        <input id="inputNewPost" type="text" ng-model="newPost.title" placeholder="Titre" class="form-control" autofocus/>
+      </div>
+      <div class="modal-footer">
+
+        <button type="button" class="btn btn-default" data-dismiss="modal">Annuler</button>
+        <button ng-click="addPost()" type="button" class="btn btn-default" data-dismiss="modal">Créer</button>
+      </div>
+    </div>
+
+  </div>
+</div>

@@ -21,8 +21,9 @@
     		if(!$scope.newPost.title){
     			return;
     		}
-        $http.post('/api/posts',$scope.newPost).then(function(){
-          displayPosts();
+        $http.post('/api/posts',$scope.newPost).then(function(res){
+          var id = res.data.insertedIds[0];
+          $location.path('/postEdit/' + id);
         });
     	}
 

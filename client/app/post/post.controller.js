@@ -18,6 +18,10 @@
         	});	
         }
         
+        $scope.goToList = function(){
+          $location.path('/posts/');
+        }
+
         $scope.editPost = function(){
         	$location.path('/postEdit/' + getPostId())
         }

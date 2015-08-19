@@ -165,7 +165,7 @@ module.exports = function(app) {
         req.body
       ], function(err, result) {
         db.close();
-        res.send('ok');
+        res.send(result);
       });
 
 
