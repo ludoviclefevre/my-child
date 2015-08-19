@@ -23,8 +23,13 @@ Photos:
 </div>
 </div>
 <br/><br/>
-<div ng-repeat="s3m in s3Medias">
-    <img  style="max-height:100px;float:left;" class="img-rounded img-responsive img-thumbnail" src="{{s3m}}"/>   
+<div class="show-image" ng-repeat="s3m in s3Medias">
+    <img  style="max-height:100px;float:left;" class="img-rounded img-responsive img-thumbnail" src="{{s3m.url}}"/>   
+
+    <button class="delete btn btn-danger btn-xs" ng-click="deleteMedia(s3m)">
+    <span class="glyphicon glyphicon-trash"></span>
+	</button>
+	
 </div>
 <div style="clear:both"</div>
 <br/><br/>

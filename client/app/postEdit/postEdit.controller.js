@@ -23,10 +23,12 @@ angular.module('myChildApp')
           _.forEach(post.medias, function(m) {
             $http.post('/api/getTempUrlRead', {
               _id: getPostId(),
-              file: m
+              file: m.fileId
             }).then(function(data) {
               console.log(data.data);
-              $scope.s3Medias.push(data.data);
+              $scope.s3Medias.push({url:data.data,
+                                    fileId:m.fileId
+                                  });
             });
           })
 
@@ -52,6 +54,7 @@ angular.module('myChildApp')
     //constructeur 
     getPost(function(post) {
       $scope.post = post;
+      console.log(post)
     })
 
     $scope.$watch('files', function() {
@@ -64,7 +67,15 @@ angular.module('myChildApp')
     });
     $scope.log = '';
 
-
+    $scope.deleteMedia = function(media){
+      console.log($scope.post.medias);
+      console.log(media)
+      var toDel = _.find($scope.post.medias,{fileId:media.fileId})
+      console.log(toDel);
+      _.remove($scope.post.medias, {fileId:media.fileId});
+      console.log($scope.post.medias)
+      $scope.save();
+    }
 
     $scope.upload = function(files) {
       if (files && files.length) {
@@ -91,7 +102,7 @@ angular.module('myChildApp')
               if (!$scope.post.medias) {
                 $scope.post.medias = [];
               }
-              $scope.post.medias.push(fileId);
+              $scope.post.medias.push({fileId:fileId});
               $scope.save();
               console.log('Done');
 

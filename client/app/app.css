@@ -59,3 +59,26 @@
 .dragover {
     border: 5px dashed blue;
 }
+
+div.show-image:hover button {
+    display: block;
+}
+div.show-image button {
+    position:absolute;
+    display:none;
+}
+
+div.show-image button.delete {
+    top:0;
+    left:79%;
+}
+div.show-image input.delete {
+    top:0;
+    left:79%;
+}
+
+div.show-image {
+    position: relative;
+    float:left;
+    margin:5px;
+}
