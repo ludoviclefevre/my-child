@@ -136,21 +136,29 @@ module.exports = function (app) {
 
   //----------------------------------------------------------------------
   app.get('/api/posts', function (req, res, next) { // TODO : ajouter ensureAuthenticated
-    MongoClient.connect(localEnv.mongoConnString, function (err, db) {
-      if (err) {
-        console.log('mongo conn err');
-        return next(err);
-      }
-      var collection = db.collection('mychild');
-      collection.find({}).toArray(function (err, docs) {
-        db.close();
-        if (err) {
-          return next(err);
-        }
-        res.send(docs);
-      });
-    });
+    var db;
+    // test promise avec le mongclient
+    // N'hésite pas à rollbacker si ca pose problème
+    MongoClient.connect(localEnv.mongoConnString)
+      .then(function(connection) {
+        db = connection;
+        return db;
+      })
+      .then(getPosts)
+      .then(function(docs) {
+        db.close()
+        return res.send(docs);
+      })
+      .catch(next)
+      .then(function() {
+        if(db) db.close();
+      })
   });
+
+  var getPosts = function(db) {
+    var collection = db.collection('mychild');
+    return collection.find({}).toArray();
+  };
 
   //----------------------------------------------------------------------
   app.post('/api/posts', function (req, res, next) { // TODO : ajouter ensureAuthenticated
