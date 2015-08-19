@@ -24,6 +24,8 @@ module.exports = function(app) {
 
   // Insert routes below
   app.use('/api/things', ensureAuthenticated, require('./api/thing'));
+  app.use('/api/tools', ensureAuthenticated, require('./api/tools'));
+
   //----------------------------------------------------------------------
 
   app.post('/api/getTempUrlRead', function(req, res) {
@@ -160,7 +162,7 @@ module.exports = function(app) {
 
       var collection = db.collection('mychild');
 
-      // Insert some documents 
+      // Insert some documents
       collection.insert([
         req.body
       ], function(err, result) {
