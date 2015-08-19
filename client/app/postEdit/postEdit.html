@@ -1,18 +1,35 @@
+<div class="pull-left">
+<button ng-click="goToList()"  style="margin:10px" type="button" class="btn " data-toggle="modal" style="position">
+<span class="glyphicon glyphicon-th-list"></span>
+</button>
+
+<button ng-click="goToPost()"  style="margin:10px" type="button" class="btn " data-toggle="modal" style="position">
+<span class="glyphicon glyphicon-triangle-left"></span>
+</button>
+</div>
+
+
+
 <div class="pull-right">
 <button  style="margin:10px" type="button" class="btn btn-danger " data-toggle="modal" data-target="#modalConfirmDelete" style="position">
 <span class="glyphicon glyphicon-trash"></span>
 	</button>
 </div>
 
-title:<br/>
-<input type="text" ng-model="post.title"/>
 <br/><br/>
-Description:<br/>
-<textarea ng-model="post.description"></textarea>
-<br/><br/>
-Photos:
-<br/>
 
+<div style="padding:50px">
+<div style="width:60%">
+ <div class="form-group">
+    <label for="titreInput">Titre</label>
+    <input type="text" ng-model="post.title" class="form-control" id="titreInput" placeholder="Titre">
+</div>
+<div class="form-group">
+    <label for="textDesc">Description</label>
+    <textarea  class="form-control" ng-model="post.description" id="textDesc" placeholder="Description" />
+    
+</div>
+</div>
 
     <div style="height:150px;width:60%" ngf-drop ngf-select ng-model="files" class="drop-box" 
         ngf-drag-over-class="dragover" ngf-multiple="true" ngf-allow-dir="true"
@@ -20,9 +37,8 @@ Photos:
     <div ngf-no-file-drop>File Drag/Drop is not supported for this browser</div>
 
 
-</div>
-</div>
-<br/><br/>
+
+
 <div class="show-image" ng-repeat="s3m in s3Medias">
     <img  style="max-height:100px;float:left;" class="img-rounded img-responsive img-thumbnail" src="{{s3m.url}}"/>   
 
@@ -31,13 +47,12 @@ Photos:
 	</button>
 	
 </div>
+</div>
 <div style="clear:both"</div>
 <br/><br/>
 <button ng-click="save()">Save</button>
 
-<br/><br/>
-<a href="/#posts">Posts list</a>
-
+</div>
 <!-- Modal -->
 <div id="modalConfirmDelete" class="modal fade" role="dialog">
   <div class="modal-dialog">

@@ -10,12 +10,25 @@
 	</button>
 </div>
 
-<div align="center">
-	<h1>{{post.title}}</h1><br/><br/><br/>
+<div style="padding:50px">
+<div align="center" style="width:60%">
+	<h1>{{post.title}}</h1><br/>
 	{{post.description}}
-
 </div>
 
 
-<br/></br/>
-<a href="/#posts">Posts list</a>
+<div align="center" class="show-image" ng-repeat="s3m in s3Medias">
+	<a fancybox data-fancybox-group="gallery" class="fancybox" href="{{s3m.url}}">
+		<img  style="max-height:100px;float:left;" class="img-rounded img-responsive img-thumbnail" src="{{s3m.url}}"/>
+	</a>
+</div>
+
+
+
+</div>
+
+<div style="clear:both"></div>
+<br/><br/>
+
+
+
