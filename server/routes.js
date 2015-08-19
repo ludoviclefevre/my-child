@@ -7,6 +7,7 @@
 var passport = require('passport')
 var errors = require('./components/errors');
 var path = require('path');
+var MongoClient = require('mongodb').MongoClient;
 var localEnv = require('./config/local.env.js');
 var crypto = require('crypto');
 
@@ -20,7 +21,7 @@ AWS.config.update({
 
 var BucketName = 'mychildfr2';
 
-module.exports = function(app) {
+module.exports = function (app) {
 
   // Insert routes below
   app.use('/api/things', ensureAuthenticated, require('./api/thing'));
@@ -28,14 +29,17 @@ module.exports = function(app) {
 
   //----------------------------------------------------------------------
 
-  app.post('/api/getTempUrlRead', function(req, res) {
+  app.post('/api/getTempUrlRead', function (req, res, next) {
     var s3 = new AWS.S3();
     var filename = req.body._id + "/" + req.body.file;
     var params = {
       Bucket: BucketName,
       Key: filename
     };
-    s3.getSignedUrl('getObject', params, function(err, url) {
+    s3.getSignedUrl('getObject', params, function (err, url) {
+      if (err) {
+        return next(err);
+      }
       res.send(url);
     });
   });
@@ -43,7 +47,7 @@ module.exports = function(app) {
   //----------------------------------------------------------------------
 
 
-  app.post('/api/getTempUrl', function(req, res) { // TODO : ajouter ensureAuthenticated
+  app.post('/api/getTempUrl', function (req, res, next) { // TODO : ajouter ensureAuthenticated
     var s3 = new AWS.S3();
 
     var filename = req.body.name;
@@ -58,8 +62,10 @@ module.exports = function(app) {
       Key: req.body.postId + "/" + fileId,
       ContentType: req.body.type
     };
-    s3.getSignedUrl('putObject', params, function(err, url) {
-      if (err) console.log(err);
+    s3.getSignedUrl('putObject', params, function (err, url) {
+      if (err) {
+        return next(err);
+      }
       res.json({
         url: url,
         fileId: fileId
@@ -68,15 +74,12 @@ module.exports = function(app) {
   });
 
 
-
   //----------------------------------------------------------------------
-  app.delete('/api/posts/:id', function(req, res) {
-    var MongoClient = require('mongodb').MongoClient;
-
-    MongoClient.connect(localEnv.mongoConnString, function(err, db) {
+  app.delete('/api/posts/:id', function (req, res, next) {
+    MongoClient.connect(localEnv.mongoConnString, function (err, db) {
       if (err) {
         console.log('mongo conn err');
-        return;
+        return next(err);
       }
       console.log("Connected correctly to server");
 
@@ -87,26 +90,25 @@ module.exports = function(app) {
 
       collection.remove({
         _id: new ObjectId(id)
-      }, function(err, result) {
+      }, function (err, result) {
+        db.close();
         if (err) {
           console.log('error delete:', err)
+          return next(err);
         }
-        db.close();
         res.send('ok');
       });
-    })
-  })
+    });
+  });
 
   //----------------------------------------------------------------------
-  app.put('/api/posts', function(req, res) { // TODO : ajouter ensureAuthenticated
+  app.put('/api/posts', function (req, res, next) { // TODO : ajouter ensureAuthenticated
     console.log('new post:', req.body.title);
 
-    var MongoClient = require('mongodb').MongoClient;
-
-    MongoClient.connect(localEnv.mongoConnString, function(err, db) {
+    MongoClient.connect(localEnv.mongoConnString, function (err, db) {
       if (err) {
         console.log('mongo conn err');
-        return;
+        return next(err);
       }
       console.log("Connected correctly to server");
 
@@ -117,12 +119,13 @@ module.exports = function(app) {
       delete req.body._id;
       collection.update({
         _id: new ObjectId(id)
-      }, req.body, function(err, result) {
+      }, req.body, function (err, result) {
+        db.close();
         if (err) {
           console.log('error update:', err)
+          return next(err);
         }
         console.log(req.body)
-        db.close();
         res.send('ok');
       });
 
@@ -132,41 +135,44 @@ module.exports = function(app) {
   });
 
   //----------------------------------------------------------------------
-  app.get('/api/posts', function(req, res) { // TODO : ajouter ensureAuthenticated
-    var MongoClient = require('mongodb').MongoClient;
-
-    MongoClient.connect(localEnv.mongoConnString, function(err, db) {
+  app.get('/api/posts', function (req, res, next) { // TODO : ajouter ensureAuthenticated
+    MongoClient.connect(localEnv.mongoConnString, function (err, db) {
       if (err) {
         console.log('mongo conn err');
-        return;
+        return next(err);
       }
       var collection = db.collection('mychild');
-      collection.find({}).toArray(function(err, docs) {
+      collection.find({}).toArray(function (err, docs) {
         db.close();
+        if (err) {
+          return next(err);
+        }
         res.send(docs);
       });
     });
   });
+
   //----------------------------------------------------------------------
-  app.post('/api/posts', function(req, res) { // TODO : ajouter ensureAuthenticated
+  app.post('/api/posts', function (req, res, next) { // TODO : ajouter ensureAuthenticated
     console.log('new post:', req.body.title);
 
-    var MongoClient = require('mongodb').MongoClient;
-
-    MongoClient.connect(localEnv.mongoConnString, function(err, db) {
+    MongoClient.connect(localEnv.mongoConnString, function (err, db) {
       if (err) {
         console.log('mongo conn err');
-        return;
+        return next(err);
       }
       console.log("Connected correctly to server");
 
       var collection = db.collection('mychild');
 
       // Insert some documents
-      collection.insert([
+      collection.insertOne([
         req.body
-      ], function(err, result) {
+      ], function (err, result) {
         db.close();
+        if (err) {
+          return next(err);
+        }
         res.send(result);
       });
 
@@ -185,7 +191,7 @@ module.exports = function(app) {
     passport.authenticate('google', {
       scope: ['profile', 'email']
     }),
-    function(req, res) {
+    function (req, res) {
       // The request will be redirected to Google for authentication, so this
       // function will not be called.
     });
@@ -199,7 +205,7 @@ module.exports = function(app) {
     passport.authenticate('google', {
       failureRedirect: '/login'
     }),
-    function(req, res) {
+    function (req, res) {
       console.log("logged");
       req.session.user = {};
       res.redirect('/#posts');
@@ -211,7 +217,7 @@ module.exports = function(app) {
 
   // All other routes should redirect to the index.html
   app.route('/*')
-    .get(function(req, res) {
+    .get(function (req, res) {
       res.sendFile(path.resolve(app.get('appPath') + '/index.html'));
     });
 
