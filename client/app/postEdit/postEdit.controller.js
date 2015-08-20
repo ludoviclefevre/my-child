@@ -4,6 +4,9 @@ angular.module('myChildApp')
   .controller('PostEditCtrl', function($scope, $http, $routeParams, $location, Upload) {
 
     $scope.s3Medias = [];
+    $scope.uploadStatus = {}
+    $scope.uploadStatus.fileCount = 0;
+    $scope.uploadStatus.uploads = []
 
     $scope.goToList = function() {
       $location.path('/posts/');
@@ -20,12 +23,13 @@ angular.module('myChildApp')
     function getPost(cb) {
       $http.get('/api/posts').then(function(data) {
 
-        console.log(data)
+
         var post = _.find(data.data, {
           _id: getPostId()
         })
-        console.log(post);
 
+
+        $scope.s3Medias.length = 0;
         if (post.medias) {
 
           _.forEach(post.medias, function(m) {
@@ -60,13 +64,18 @@ angular.module('myChildApp')
       })
     }
 
+    function refreshPost() {
+      getPost(function(post) {
+        $scope.post = post;
+        if (!$scope.post.medias) {
+          $scope.post.medias = [];
+        }
+        console.log(post)
+      })
+    }
+
     //constructeur 
-    getPost(function(post) {
-      $scope.post = post;
-      console.log(post)
-    })
-
-
+    refreshPost()
 
     $scope.$watch('files', function() {
       $scope.upload($scope.files);
@@ -76,7 +85,7 @@ angular.module('myChildApp')
         $scope.upload([$scope.file]);
       }
     });
-    $scope.log = '';
+
 
     $scope.deleteMedia = function(media) {
       console.log($scope.post.medias);
@@ -92,13 +101,85 @@ angular.module('myChildApp')
       $scope.save();
     }
 
-    $scope.upload = function(files) {
-      //$scope.uploadOld(files)
-      $scope.uploadOptim(files)
 
+    function uploadOneFile(fileInfo, currentUploadInfo, cb) {
+
+      console.log('upload 1 file')
+      $.ajax({
+        url: fileInfo.url,
+        type: 'PUT',
+        data: fileInfo.file,
+        processData: false,
+        contentType: fileInfo.file.type,
+        xhr: function() {
+          var xhrobj = $.ajaxSettings.xhr();
+          if (xhrobj.upload) {
+            xhrobj.upload.addEventListener('progress', function(event) {
+              var percent = 0;
+              var position = event.loaded || event.position;
+              var total = event.total || e.totalSize;
+              if (event.lengthComputable) {
+                percent = Math.ceil(position / total * 100);
+                console.log('prog:', percent)
+                currentUploadInfo.progress = percent;
+                $scope.$apply();
+              }
+            }, false);
+          }
+
+          return xhrobj;
+        },
+      }).success(function(res) {
+        cb();
+      });
     }
 
-    $scope.uploadOptim = function(files) {
+    var uploadIndex;
+
+    function uploadThread(fileInfos, index, cb) {
+      console.log('uploadThread,uploadIndex:', uploadIndex)
+      if (uploadIndex >= fileInfos.length) {
+        console.log('uploadThread,uploadIndex.exiting:', uploadIndex)
+        cb();
+        return;
+      }
+      var fileInfo = fileInfos[uploadIndex]
+      uploadIndex++;
+      var currentUploadInfo = {
+        fileInfo: fileInfo,
+        progress: 0
+      };
+      $scope.uploadStatus.uploads.push(currentUploadInfo);
+
+      uploadOneFile(fileInfo, currentUploadInfo, function() {
+        _.remove($scope.uploadStatus.uploads, {
+          progress: 100
+        });
+        $scope.post.medias.push({
+          fileId: fileInfo.fileId
+        });
+        $scope.uploadStatus.uploadedCount++;
+        uploadThread(fileInfos, uploadIndex + 1, cb);
+      })
+    }
+
+    function launchUploadThread(fileInfos, cb) {
+      var nbFinishedThread = 0;
+      uploadIndex = 0;
+      var NB_THREAD = 2;
+
+      for (var i = 0; i < NB_THREAD; i++) {
+        uploadThread(fileInfos, uploadIndex, function() {
+          uploadIndex++;
+          nbFinishedThread++;
+          if (nbFinishedThread >= NB_THREAD) {
+            cb();
+          }
+        });
+      }
+    }
+
+    $scope.upload = function(files) {
       if (!files || files.length == 0) {
         return;
       }
@@ -110,101 +191,34 @@ angular.module('myChildApp')
 
       console.log('type:', filenameArr[0].type)
 
-
       $http.post('/api/getTempUrlWriteOptim', {
         postId: getPostId(),
         filenameArr: filenameArr,
         type: files[0].type
       }).then(function(res) {
         console.log(res);
-        var uploadCount = res.data.length;
-        _.forEach(res.data, function(fileInfo) {
 
-          var file = _.find(files, {
+        var fileInfos = res.data;
+        _.forEach(fileInfos, function(fileInfo) {
+          fileInfo.file = _.find(files, {
             name: fileInfo.filename
           });
-
-          console.log(fileInfo.url);
-          console.log('uploading..');
-          $.ajax({
-            url: fileInfo.url,
-            type: 'PUT',
-            data: file,
-            processData: false,
-            contentType: file.type,
-            xhr: function() {
-              var xhrobj = $.ajaxSettings.xhr();
-              if (xhrobj.upload) {
-                xhrobj.upload.addEventListener('progress', function(event) {
-                  var percent = 0;
-                  var position = event.loaded || event.position;
-                  var total = event.total || e.totalSize;
-                  if (event.lengthComputable) {
-                    percent = Math.ceil(position / total * 100);
-                    console.log('prog:', percent)
-                  }
-
-                  //widget.settings.onUploadProgress.call(widget.element, widget.queuePos, percent);
-                }, false);
-              }
-
-              return xhrobj;
-            },
-          }).success(function(res) {
-            console.log('done 1 file');
-            uploadCount--;
-            if (!$scope.post.medias) {
-              $scope.post.medias = [];
-            }
-            $scope.post.medias.push({
-              fileId: fileInfo.fileId
-            });
-            if (uploadCount == 0) {
-              $scope.save();
-              console.log('done all files');
-            }
-          });
         })
+
+        console.log('fileInfos', fileInfos)
+
+        $scope.uploadStatus.fileCount = files.length;
+        $scope.uploadStatus.uploadedCount = 0;
+
+        launchUploadThread(fileInfos, function() {
+          $scope.save();
+          $scope.uploadStatus.fileCount = 0;
+          console.log('done all files');
+          refreshPost()
+        })
+
       });
     }
 
-    $scope.uploadOld = function(files) {
 
-
-
-      if (files && files.length) {
-        for (var i = 0; i < files.length; i++) {
-          var file = files[i];
-          var fileId = null;
-          $http.post('/api/getTempUrlWrite', {
-            postId: getPostId(),
-            name: file.name,
-            size: file.size,
-            type: file.type
-          }).
-          then(function(res) {
-            console.log(res.data.url);
-            fileId = res.data.fileId;
-            $.ajax({
-              url: res.data.url,
-              type: 'PUT',
-              data: file,
-              processData: false,
-              contentType: file.type,
-            }).success(function(res) {
-
-              if (!$scope.post.medias) {
-                $scope.post.medias = [];
-              }
-              $scope.post.medias.push({
-                fileId: fileId
-              });
-              $scope.save();
-              console.log('Done');
-
-            });
-          });
-        }
-      };
-    }
   });

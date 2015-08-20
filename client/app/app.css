@@ -83,3 +83,21 @@ div.show-image {
     margin:5px;
 }
 
+body {
+    background-color:#E1EAED;
+}
+
+.postblock {
+    margin:10px;
+    padding:10px;
+    border:1px solid #9CCBDB;
+    float:left;
+    cursor:pointer;
+    background-color: #C3E1EB;
+           border-radius:5px;
+}
+
+.postblock:hover {
+        background-color: #B7DEEB;
+
+}

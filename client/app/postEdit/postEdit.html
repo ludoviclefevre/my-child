@@ -31,11 +31,18 @@
 </div>
 </div>
 
+<div ng-show="!uploadStatus.fileCount">
     <div style="height:150px;width:60%" ngf-drop ngf-select ng-model="files" class="drop-box" 
         ngf-drag-over-class="dragover" ngf-multiple="true" ngf-allow-dir="true"
         accept="image/*">Drop or click to upload images/videos</div>
     <div ngf-no-file-drop>File Drag/Drop is not supported for this browser</div>
-
+</div>
+<div ng-show="uploadStatus.fileCount>0">
+  <b> {{uploadStatus.uploadedCount}}/{{uploadStatus.fileCount}} files:</b>
+  <div ng-repeat="u in uploadStatus.uploads">
+    {{u.fileInfo.filename}} : {{u.progress}} %
+  </div>
+</div>
 
 
 
