@@ -20,7 +20,8 @@
     "serve-favicon": "~2.3.0",
     "mongodb": "~2.0",
     "aws-sdk": "*",
-    "crypto": "0.0.3"
+    "crypto": "0.0.3",
+    "async": "~1.4.2"
   },
   "devDependencies": {
     "connect-livereload": "~0.5.3",

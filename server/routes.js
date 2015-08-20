@@ -43,7 +43,7 @@ module.exports = function(app) {
   //----------------------------------------------------------------------
 
 
-  app.post('/api/getTempUrl', function(req, res) { // TODO : ajouter ensureAuthenticated
+  app.post('/api/getTempUrlWrite', function(req, res) { // TODO : ajouter ensureAuthenticated
     var s3 = new AWS.S3();
 
     var filename = req.body.name;
@@ -66,8 +66,36 @@ module.exports = function(app) {
       });
     });
   });
+  //----------------------------------------------------------------------
+  app.post('/api/getTempUrlWriteOptim', function(req, res) { // TODO : ajouter ensureAuthenticated
+    var s3 = new AWS.S3();
 
+    var filenameArr = req.body.filenameArr;
 
+    var ret = [];
+
+    filenameArr.forEach(function(filename) {
+      var ext = "";
+      if (filename.indexOf(".") > -1) {
+        ext = "." + filename.split('.').pop();
+      }
+
+      var fileId = crypto.randomBytes(20).toString('hex') + ext;
+      var params = {
+        Bucket: BucketName,
+        Key: req.body.postId + "/" + fileId,
+        ContentType: req.body.type
+      };
+      var url = s3.getSignedUrl('putObject', params);
+      ret.push({
+        url: url,
+        fileId: fileId,
+        filename: filename
+      });
+    });
+    res.send(ret);
+
+  });
 
   //----------------------------------------------------------------------
   app.delete('/api/posts/:id', function(req, res) {
