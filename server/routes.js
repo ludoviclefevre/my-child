@@ -204,7 +204,7 @@ module.exports = function(app) {
       var collection = db.collection('mychild');
 
       // Insert some documents
-      collection.insertOne([
+      collection.insert([
         req.body
       ], function(err, result) {
         db.close();
