@@ -208,7 +208,7 @@ module.exports = function(app) {
       console.log('req.body',req.body)
       console.log('req.body is array:',isArray)
       // Insert some documents
-      collection.insertOne([
+      collection.insert([
         req.body
       ], function(err, result) {
         db.close();
