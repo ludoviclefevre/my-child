@@ -17,15 +17,15 @@
   <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
   <!-- build:css(client) app/vendor.css -->
   <!-- bower:css -->
+  <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css" />
+  <link rel="stylesheet" href="bower_components/fancybox3/jquery.fancybox-thumbs.css" />
+  <link rel="stylesheet" href="bower_components/fancybox3/jquery.fancybox.css" />
   <!-- endbower -->
   <!-- endbuild -->
   <!-- build:css({.tmp,client}) app/app.css -->
   <link rel="stylesheet" href="app/app.css">
-  <!-- injector:css -->
-  <link rel="stylesheet" href="app/app.css">
   <link rel="stylesheet" href="app/main/main.css">
   <link rel="stylesheet" href="components/modal/modal.css">
-  <!-- endinjector -->
   <!-- endbuild -->
 </head>
 <body ng-app="myChildApp">
@@ -73,21 +73,14 @@
 <script src="bower_components/lodash/lodash.js"></script>
 <script src="bower_components/jquery-ui/jquery-ui.js"></script>
 <script src="bower_components/ng-file-upload/ng-file-upload.js"></script>
+<script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+<script src="bower_components/fancybox3/jquery.fancybox.js"></script>
+<script src="bower_components/fancybox3/jquery.fancybox-thumbs.js"></script>
 <!-- endbower -->
 <!-- endbuild -->
 
-<link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css" />
-<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-
-<link rel="stylesheet" type="text/css" href="assets/fancybox/jquery.fancybox.css">
-<script type="text/javascript" src="assets/fancybox/jquery.fancybox.js"></script>
-
-<link rel="stylesheet" type="text/css" href="assets/fancybox/jquery.fancybox-thumbs.css">
-<script type="text/javascript" src="assets/fancybox/jquery.fancybox-thumbs.js"></script>
-
 <!-- build:js({.tmp,client}) app/app.js -->
 <script src="app/app.js"></script>
-<!-- injector:js -->
 <script src="app/fancybox/fancybox.directive.js"></script>
 <script src="app/gallery/galleries.controller.js"></script>
 <script src="app/gallery/galleries.js"></script>
@@ -105,7 +98,6 @@
 <script src="app/register/register.js"></script>
 <script src="components/modal/modal.service.js"></script>
 <script src="components/navbar/navbar.controller.js"></script>
-<!-- endinjector -->
 <!-- endbuild -->
 </body>
 </html>

@@ -7,6 +7,7 @@
 var passport = require('passport')
 var errors = require('./components/errors');
 var path = require('path');
+var MongoClient = require('mongodb').MongoClient;
 var localEnv = require('./config/local.env.js');
 var crypto = require('crypto');
 
@@ -28,7 +29,7 @@ module.exports = function(app) {
 
   //----------------------------------------------------------------------
 
-  app.post('/api/getTempUrlRead', function(req, res) {
+  app.post('/api/getTempUrlRead', function(req, res, next) {
     var s3 = new AWS.S3();
     var filename = req.body._id + "/" + req.body.file;
     var params = {
@@ -36,6 +37,9 @@ module.exports = function(app) {
       Key: filename
     };
     s3.getSignedUrl('getObject', params, function(err, url) {
+      if (err) {
+        return next(err);
+      }
       res.send(url);
     });
   });
@@ -44,6 +48,7 @@ module.exports = function(app) {
 
 
   app.post('/api/getTempUrlWrite', function(req, res) { // TODO : ajouter ensureAuthenticated
+
     var s3 = new AWS.S3();
 
     var filename = req.body.name;
@@ -59,7 +64,9 @@ module.exports = function(app) {
       ContentType: req.body.type
     };
     s3.getSignedUrl('putObject', params, function(err, url) {
-      if (err) console.log(err);
+      if (err) {
+        return next(err);
+      }
       res.json({
         url: url,
         fileId: fileId
@@ -98,13 +105,11 @@ module.exports = function(app) {
   });
 
   //----------------------------------------------------------------------
-  app.delete('/api/posts/:id', function(req, res) {
-    var MongoClient = require('mongodb').MongoClient;
-
+  app.delete('/api/posts/:id', function(req, res, next) {
     MongoClient.connect(localEnv.mongoConnString, function(err, db) {
       if (err) {
         console.log('mongo conn err');
-        return;
+        return next(err);
       }
       console.log("Connected correctly to server");
 
@@ -116,25 +121,24 @@ module.exports = function(app) {
       collection.remove({
         _id: new ObjectId(id)
       }, function(err, result) {
+        db.close();
         if (err) {
           console.log('error delete:', err)
+          return next(err);
         }
-        db.close();
         res.send('ok');
       });
-    })
-  })
+    });
+  });
 
   //----------------------------------------------------------------------
-  app.put('/api/posts', function(req, res) { // TODO : ajouter ensureAuthenticated
+  app.put('/api/posts', function(req, res, next) { // TODO : ajouter ensureAuthenticated
     console.log('new post:', req.body.title);
-
-    var MongoClient = require('mongodb').MongoClient;
 
     MongoClient.connect(localEnv.mongoConnString, function(err, db) {
       if (err) {
         console.log('mongo conn err');
-        return;
+        return next(err);
       }
       console.log("Connected correctly to server");
 
@@ -146,11 +150,12 @@ module.exports = function(app) {
       collection.update({
         _id: new ObjectId(id)
       }, req.body, function(err, result) {
+        db.close();
         if (err) {
           console.log('error update:', err)
+          return next(err);
         }
         console.log(req.body)
-        db.close();
         res.send('ok');
       });
 
@@ -160,41 +165,52 @@ module.exports = function(app) {
   });
 
   //----------------------------------------------------------------------
-  app.get('/api/posts', function(req, res) { // TODO : ajouter ensureAuthenticated
-    var MongoClient = require('mongodb').MongoClient;
-
-    MongoClient.connect(localEnv.mongoConnString, function(err, db) {
-      if (err) {
-        console.log('mongo conn err');
-        return;
-      }
-      var collection = db.collection('mychild');
-      collection.find({}).toArray(function(err, docs) {
-        db.close();
-        res.send(docs);
-      });
-    });
+  app.get('/api/posts', function(req, res, next) { // TODO : ajouter ensureAuthenticated
+    var db;
+    // test promise avec le mongclient
+    // N'hésite pas à rollbacker si ca pose problème
+    MongoClient.connect(localEnv.mongoConnString)
+      .then(function(connection) {
+        db = connection;
+        return db;
+      })
+      .then(getPosts)
+      .then(function(docs) {
+        db.close()
+        return res.send(docs);
+      })
+      .catch(next)
+      .then(function() {
+        if (db) db.close();
+      })
   });
+
+  var getPosts = function(db) {
+    var collection = db.collection('mychild');
+    return collection.find({}).toArray();
+  };
+
   //----------------------------------------------------------------------
-  app.post('/api/posts', function(req, res) { // TODO : ajouter ensureAuthenticated
+  app.post('/api/posts', function(req, res, next) { // TODO : ajouter ensureAuthenticated
     console.log('new post:', req.body.title);
 
-    var MongoClient = require('mongodb').MongoClient;
-
     MongoClient.connect(localEnv.mongoConnString, function(err, db) {
       if (err) {
         console.log('mongo conn err');
-        return;
+        return next(err);
       }
       console.log("Connected correctly to server");
 
       var collection = db.collection('mychild');
 
       // Insert some documents
-      collection.insert([
+      collection.insertOne([
         req.body
       ], function(err, result) {
         db.close();
+        if (err) {
+          return next(err);
+        }
         res.send(result);
       });
 
