@@ -203,6 +203,10 @@ module.exports = function(app) {
 
       var collection = db.collection('mychild');
 
+      var isArray = Array.isArray(req.body);
+
+      console.log('req.body',req.body)
+      console.log('req.body is array:',isArray)
       // Insert some documents
       collection.insertOne([
         req.body
