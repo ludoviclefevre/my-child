@@ -1,6 +1,37 @@
 /**
- * Main application routes
+ * Using Rails-like standard naming convention for endpoints.
+ * GET     /posts              ->  index
+ * POST    /posts              ->  create
+ * GET     /posts/:id          ->  show
+ * PUT     /posts/:id          ->  update
+ * DELETE  /posts/:id          ->  destroy
  */
+
+'use strict';
+
+var _ = require('lodash');
+var posts = require('./posts');
+
+var routes = {
+  index: function(req,res,next) {
+
+  },
+  create: function(req,res,next) {
+
+  },
+  show: function(req,res,next) {
+
+  },
+  update: function(req,res,next) {
+
+  },
+  destroy: function(req,res,next) {
+
+  }
+};
+
+
+
 /*
 'use strict';
 
