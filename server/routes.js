@@ -7,9 +7,11 @@
 var passport = require('passport')
 var errors = require('./components/errors');
 var path = require('path');
+var Promise = require('bluebird');
 var MongoClient = require('mongodb').MongoClient;
 var localEnv = require('./config/local.env.js');
 var crypto = require('crypto');
+var _ = require('lodash');
 
 var ObjectId = require('mongodb').ObjectID;
 
@@ -18,6 +20,7 @@ AWS.config.update({
   accessKeyId: localEnv.AwsAccessKeyId,
   secretAccessKey: localEnv.AwsSecretKey
 });
+var s3Async = Promise.promisifyAll(new AWS.S3());
 
 var BucketName = 'mychildfr2';
 
@@ -73,35 +76,63 @@ module.exports = function(app) {
       });
     });
   });
+
+  var putS3Object = function(file) {
+    var ext = "";
+    if (file.name.indexOf(".") > -1) {
+      ext = "." + file.name.split('.').pop();
+    }
+
+    var filePrefix = crypto.randomBytes(20).toString('hex');
+    var fileId = filePrefix + ext;
+    var thumbFileId = filePrefix + '_thumb' + ext;
+
+    var params = {
+      Bucket: BucketName,
+      Key: file.postId + "/" + fileId,
+      ContentType: file.type
+    };
+
+    var thumbParams = {
+      Bucket: BucketName,
+      Key: file.postId + "/" + thumbFileId,
+      ContentType: file.type
+    };
+
+    var files = [
+      s3Async.getSignedUrlAsync('putObject', params),
+      s3Async.getSignedUrlAsync('putObject', thumbParams)
+    ];
+
+    return Promise.all(files)
+      .spread(function(url, thumbUrl) {
+        return {
+          url: url,
+          thumbUrl: thumbUrl,
+          fileId: fileId,
+          thumbFileId: thumbFileId,
+          filename: file.name
+        }
+      });
+  };
+
   //----------------------------------------------------------------------
-  app.post('/api/getTempUrlWriteOptim', function(req, res) { // TODO : ajouter ensureAuthenticated
+  app.post('/api/getTempUrlWriteOptim', function(req, res, next) { // TODO : ajouter ensureAuthenticated
     var s3 = new AWS.S3();
 
-    var filenameArr = req.body.filenameArr;
-
-    var ret = [];
-
-    filenameArr.forEach(function(filename) {
-      var ext = "";
-      if (filename.indexOf(".") > -1) {
-        ext = "." + filename.split('.').pop();
+    var filenameArr = _.map(req.body.filenameArr, function(filename) {
+      return {
+        name: filename,
+        postId: req.body.postId,
+        type: req.body.type
       }
-
-      var fileId = crypto.randomBytes(20).toString('hex') + ext;
-      var params = {
-        Bucket: BucketName,
-        Key: req.body.postId + "/" + fileId,
-        ContentType: req.body.type
-      };
-      var url = s3.getSignedUrl('putObject', params);
-      ret.push({
-        url: url,
-        fileId: fileId,
-        filename: filename
-      });
     });
-    res.send(ret);
 
+    Promise.map(filenameArr, putS3Object)
+      .then(function(urls) {
+        res.send(urls);
+      })
+      .catch(next);
   });
 
   //----------------------------------------------------------------------
