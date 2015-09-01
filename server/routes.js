@@ -32,19 +32,45 @@ module.exports = function(app) {
 
   //----------------------------------------------------------------------
 
+  var getFileExtension = function(filename) {
+    var ext = "";
+    if (filename.indexOf(".") > -1) {
+      ext = "." + filename.split('.').pop();
+    }
+    return ext;
+  };
+
+  var getFilenameWithoutExtension = function(filename) {
+    return (filename.substr(0, filename.lastIndexOf('.')) || filename);
+  };
+
   app.post('/api/getTempUrlRead', function(req, res, next) {
-    var s3 = new AWS.S3();
-    var filename = req.body._id + "/" + req.body.file;
+    var ext = getFileExtension(req.body.file);
+    var filenameWithoutExtension  =getFilenameWithoutExtension(req.body.file);
+    var thumbFileId = filenameWithoutExtension + '_thumb' + ext;
+
     var params = {
       Bucket: BucketName,
-      Key: filename
+      Key: req.body._id + "/" + req.body.file
     };
-    s3.getSignedUrl('getObject', params, function(err, url) {
-      if (err) {
-        return next(err);
-      }
-      res.send(url);
-    });
+
+    var thumbParams = {
+      Bucket: BucketName,
+      Key: req.body._id + "/" + thumbFileId
+    };
+
+    var files = [
+      s3Async.getSignedUrlAsync('getObject', params),
+      s3Async.getSignedUrlAsync('getObject', thumbParams)
+    ];
+
+    return Promise.all(files)
+      .spread(function(url, thumbUrl) {
+        res.json({
+          url: url,
+          thumbUrl: thumbUrl
+        });
+      });
   });
 
   //----------------------------------------------------------------------
@@ -78,10 +104,7 @@ module.exports = function(app) {
   });
 
   var putS3Object = function(file) {
-    var ext = "";
-    if (file.name.indexOf(".") > -1) {
-      ext = "." + file.name.split('.').pop();
-    }
+    var ext = getFileExtension(file.name);
 
     var filePrefix = crypto.randomBytes(20).toString('hex');
     var fileId = filePrefix + ext;

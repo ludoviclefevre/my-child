@@ -28,7 +28,8 @@
               }).then(function(data) {
                 console.log(data.data);
                 $scope.s3Medias.push({
-                  url: data.data,
+                  url: data.data.url,
+                  thumbUrl: data.data.url,
                   fileId: m.fileId
                 });
               });

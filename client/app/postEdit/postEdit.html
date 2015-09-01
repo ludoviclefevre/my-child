@@ -27,12 +27,12 @@
 <div class="form-group">
     <label for="textDesc">Description</label>
     <textarea  class="form-control" ng-model="post.description" id="textDesc" placeholder="Description" />
-    
+
 </div>
 </div>
 
 <div ng-show="!uploadStatus.fileCount">
-    <div style="height:150px;width:60%" ngf-drop ngf-select ng-model="files" class="drop-box" 
+    <div style="height:150px;width:60%" ngf-drop ngf-select ng-model="files" class="drop-box"
         ngf-drag-over-class="dragover" ngf-multiple="true" ngf-allow-dir="true"
         accept="image/*">Drop or click to upload images/videos</div>
     <div ngf-no-file-drop>File Drag/Drop is not supported for this browser</div>
@@ -47,12 +47,15 @@
 
 
 <div class="show-image" ng-repeat="s3m in s3Medias">
-    <img  style="max-height:100px;float:left;" class="img-rounded img-responsive img-thumbnail" src="{{s3m.url}}"/>   
+
+  <a class="fancybox-thumb" rel="fancybox-thumb" href="{{s3m.url}}" title=""><img src="{{s3m.thumbUrl}}" alt="ALT_TITLE"></a>
+
+    <!--<img  style="max-height:100px;float:left;" class="img-rounded img-responsive img-thumbnail" src="{{s3m.thumbUrl}}"/>-->
 
     <button class="delete btn btn-danger btn-xs" ng-click="deleteMedia(s3m)">
     <span class="glyphicon glyphicon-trash"></span>
 	</button>
-	
+
 </div>
 </div>
 <div style="clear:both"</div>

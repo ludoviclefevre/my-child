@@ -16,7 +16,8 @@
     "jquery": "~2.1.4",
     "jquery-ui": "~1.11.4",
     "ng-file-upload": "~6.2.1",
-    "fancybox3": "*"
+    "fancybox3": "*",
+    "async": "~1.4.2"
   },
   "devDependencies": {
     "angular-mocks": "1.4.4",
