@@ -14,9 +14,17 @@ module.exports = {
       type: 'oauth',
       clientId: 'xxxx',
       clientSecret: 'yyyyyy'
+    },
+    facebook: {
+      type: '',
+      clientId: 'xxxx',
+      clientSecret: 'yyyyyy'
     }
   },
 
+  mongoConnString : 'mongodb://xxx',
+  AwsAccessKeyId:'xxx',
+  AwsSecretKey:'yyyt',
   // Control debug level for modules using visionmedia/debug
   DEBUG: ''
 };
